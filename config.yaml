@@ -1,0 +1,31 @@
+paths:
+  images: /work/scratch/sd37taza/test_input
+  out_bodies: /work/scratch/sd37taza/test_output/bodies
+  out_faces: /work/scratch/sd37taza/test_output/faces
+  tables: /work/scratch/sd37taza/test_output/tables
+
+detect:
+  yolo_body: yolov8n.pt
+  img_size_body: 640
+  body_conf_thres: [0.25, 0.5, 0.75] # derzeit wird nur das Minimum genutzt
+
+  face_backend: yolov8
+  face_out_size: 224
+  face_min_size: 64
+  face_conf_thres: [0.5, 0.7, 0.85] # derzeit wird nur das Minimum genutzt
+
+preprocess:
+  letterbox_size: 224
+  pad_color: 114
+  archive_long_side_cap: 512
+
+runtime:
+  batch_size: 16
+  fp16: true
+  num_workers: 4
+  seed: 1337
+
+schema:
+  images: [image_id, image_path, width, height]
+  bodies: [image_id, body_id, body_conf, body_crop_path, detector_body, age_mivolo]
+  faces: [image_id, body_id, face_id, face_conf, face_crop_path, detector_face, age_deepface, age_mivolo, age_vlm]
