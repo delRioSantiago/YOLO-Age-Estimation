@@ -21,9 +21,8 @@ csv_path = os.path.join(CSV_PATH, "bodies.csv")
 with open(csv_path, "a", newline="") as csv_file:
     csv_writer = csv.writer(csv_file)
     write_header = not os.path.exists(csv_path)
-    if write_header:
-        header = cfg["schema"]["bodies"]
-        csv_writer.writerow(header)
+    header = cfg["schema"]["bodies"]
+    csv_writer.writerow(header)
     for filename in sorted(os.listdir(IN_PATH)):
         if not filename.lower().endswith((".jpg",".jpeg",".png")): 
             continue

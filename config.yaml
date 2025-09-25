@@ -11,7 +11,7 @@ detect:
 
   face_backend: yolov8
   face_out_size: 224
-  face_min_size: 64
+  face_min_size: 224
   face_conf_thres: [0.5, 0.7, 0.85] # derzeit wird nur das Minimum genutzt
 
 preprocess:
