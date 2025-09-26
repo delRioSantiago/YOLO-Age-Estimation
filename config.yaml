@@ -1,18 +1,18 @@
 paths:
-  images: /work/scratch/sd37taza/unsplash/original_images
-  out_bodies: /work/scratch/sd37taza/unsplash/bodies
-  out_faces: /work/scratch/sd37taza/unsplash/faces
-  tables: /work/scratch/sd37taza/unsplash/tables
+  images: /work/scratch/sd37taza/big_test/test_input
+  out_bodies: /work/scratch/sd37taza/big_test/test_output/bodies
+  out_faces: /work/scratch/sd37taza/big_test/test_output/faces
+  tables: /work/scratch/sd37taza/big_test/test_output/tables
 
 detect:
   yolo_body: yolov8n.pt
   img_size_body: 640
-  body_conf_thres: [0.25, 0.5, 0.75] # derzeit wird nur das Minimum genutzt
+  body_conf_thres: [0.25, 0.5, 0.75]
 
-  face_backend: yolov8
+  deepface_backend: yolov8
   face_out_size: 224
-  face_min_size: 224
-  face_conf_thres: [0.5, 0.7, 0.85] # derzeit wird nur das Minimum genutzt
+  face_min_size: 64
+  face_conf_thres: [0.5, 0.7, 0.85]
 
 preprocess:
   letterbox_size: 224
@@ -28,4 +28,10 @@ runtime:
 schema:
   images: [image_id, image_path, width, height]
   bodies: [image_id, body_id, body_conf, body_crop_path, detector_body, age_mivolo]
-  faces: [image_id, body_id, face_id, face_conf, face_crop_path, detector_face, age_deepface, age_mivolo, age_vlm]
+  faces: [image_id, body_id, face_id, face_conf, face_crop_path, gender, race, age_deepface, age_mivolo, age_vlm]
+
+annotate:
+  deepface:
+    actions: ["age", "gender", "race"]
+    detector_backend: "skip"
+    write_every: 200

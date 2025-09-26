@@ -12,11 +12,13 @@ FACES_CSV  = os.path.join(cfg["paths"]["tables"], "faces.csv")
 OUT_FACES_PATH  = cfg["paths"]["out_faces"]
 os.makedirs(OUT_FACES_PATH, exist_ok=True)
 
+
+
 with open(BODIES_CSV) as file_bodies, open(FACES_CSV, "a", newline="") as file_faces:
     bodies_reader = csv.DictReader(file_bodies)
     faces_writer = csv.writer(file_faces)
-    header = cfg["schema"]["faces"]
-    faces_writer.writerow(header)
+    schema_faces = cfg["schema"]["faces"]
+    faces_writer.writerow(schema_faces)
     bodies_updates = {}  
 
     for row in bodies_reader:
@@ -29,7 +31,7 @@ with open(BODIES_CSV) as file_bodies, open(FACES_CSV, "a", newline="") as file_f
             continue
         # Face-Detektion
         faces = DeepFace.extract_faces(
-            img_body, enforce_detection=False, detector_backend=cfg["detect"]["face_backend"]
+            img_body, enforce_detection=False, detector_backend=cfg["detect"]["deepface_backend"]
         )
 
         candidates = []
@@ -53,6 +55,18 @@ with open(BODIES_CSV) as file_bodies, open(FACES_CSV, "a", newline="") as file_f
             # optional: letterbox auf cfg["preprocess"]["face_out_size"] TODO entscheiden
             face = cv2.resize(face, (cfg["preprocess"]["face_out_size"])*2) if False else face
             cv2.imwrite(out_path, face)
-            faces_writer.writerow([image_id, body_id, face_id, f"{conf:.6f}", out_path, cfg["detect"]["face_backend"]])
-            del  face
-        del img_body, faces, candidates 
+
+            row_dict = {
+                "image_id": image_id,
+                "body_id": body_id,
+                "face_id": face_id,
+                "face_conf": f"{conf:.6f}",
+                "face_crop_path": out_path,
+                "detector_face": cfg["detect"]["deepface_backend"],
+            }
+
+            # Vollständige Zeile gemäß Schema
+            row_out = [row_dict.get(col, None) for col in schema_faces]
+            faces_writer.writerow(row_out)
+            del face
+        del img_body, faces, candidates
