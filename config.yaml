@@ -1,8 +1,8 @@
 paths:
-  images: /work/scratch/sd37taza/test_input
-  out_bodies: /work/scratch/sd37taza/test_output/bodies
-  out_faces: /work/scratch/sd37taza/test_output/faces
-  tables: /work/scratch/sd37taza/test_output/tables
+  images: /work/scratch/sd37taza/unsplash/original_images
+  out_bodies: /work/scratch/sd37taza/unsplash/bodies
+  out_faces: /work/scratch/sd37taza/unsplash/faces
+  tables: /work/scratch/sd37taza/unsplash/tables
 
 detect:
   yolo_body: yolov8n.pt

@@ -41,7 +41,7 @@ with open(BODIES_CSV) as file_bodies, open(FACES_CSV, "a", newline="") as file_f
 
         candidates.sort(key=lambda z: z[0], reverse=True)
         keep = 1 if candidates else 0
-        bodies_updates[(image_id,body_id)] = (keep)
+        bodies_updates[(image_id,body_id)] = (keep) # TODO nutzen oder entfernen
 
         for face_id, (conf, fdict) in enumerate(candidates):
             face = fdict["face"]
@@ -53,5 +53,6 @@ with open(BODIES_CSV) as file_bodies, open(FACES_CSV, "a", newline="") as file_f
             # optional: letterbox auf cfg["preprocess"]["face_out_size"] TODO entscheiden
             face = cv2.resize(face, (cfg["preprocess"]["face_out_size"])*2) if False else face
             cv2.imwrite(out_path, face)
-
             faces_writer.writerow([image_id, body_id, face_id, f"{conf:.6f}", out_path, cfg["detect"]["face_backend"]])
+            del  face
+        del img_body, faces, candidates 
