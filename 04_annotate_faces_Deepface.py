@@ -1,6 +1,5 @@
 import os
 import csv
-import shutil
 import yaml
 import time
 import cv2
@@ -9,19 +8,20 @@ from deepface import DeepFace
 with open("config.yaml", "r", encoding="utf-8") as f:
     cfg = yaml.safe_load(f)
 
-FACES_CSV   = os.path.join(cfg["paths"]["tables"], "faces.csv")
-TMP = os.path.join(cfg["paths"]["tables"], "faces.tmp.csv")
+PROJECT_DIR = cfg["paths"]["project"]
+FACES_CSV   = os.path.join(PROJECT_DIR, cfg["paths"]["tables"], "faces.csv")
+TMP = os.path.join(PROJECT_DIR, cfg["paths"]["tables"], "faces.tmp.csv")
 MIN_FACE_CONF   = min(cfg["detect"]["face_conf_thres"])
 
 if not os.path.exists(FACES_CSV):
     raise FileNotFoundError(f"faces.csv nicht gefunden: {FACES_CSV}")
-os.makedirs(cfg["paths"]["tables"], exist_ok=True)
+os.makedirs(os.path.dirname(FACES_CSV), exist_ok=True)
 
 schema_faces = cfg["schema"]["faces"]
-buffer_rows = []
 processed = 0
 skipped   = 0
 errors    = 0
+unusable  = 0
 t0 = time.time()
 
 with open(FACES_CSV, "r", encoding="utf-8") as faces_file, open(TMP, "w", newline="", encoding="utf-8") as tmp_file:
@@ -29,8 +29,12 @@ with open(FACES_CSV, "r", encoding="utf-8") as faces_file, open(TMP, "w", newlin
     writer_faces = csv.DictWriter(tmp_file, fieldnames=schema_faces)
     writer_faces.writeheader()
     for row in reader_faces:
+        print (f"Wert von usable: {row.get('usable')}")
+        if row.get("usable") == "False":
+            unusable += 1
+            continue
         try: 
-            img_face = cv2.imread(row["face_crop_path"])
+            img_face = cv2.imread(os.path.join(PROJECT_DIR, cfg["paths"]["faces"], row["file_name"]))
             if img_face is None:
                 errors += 1
                 continue
@@ -47,7 +51,7 @@ with open(FACES_CSV, "r", encoding="utf-8") as faces_file, open(TMP, "w", newlin
             pass
         writer_faces.writerow(row)
         processed += 1
-shutil.move(TMP, FACES_CSV)
+# shutil.move(TMP, FACES_CSV)
 dt = time.time() - t0
-print(f"Fertig. Neu annotiert: {processed}, übersprungen: {skipped}, Fehler: {errors}, Dauer: {dt:.1f}s")
+print(f"Fertig. Annotiert: {processed}, übersprungen: {skipped}, unbrauchbar: {unusable}, Fehler: {errors}, Dauer: {dt:.1f}s")
 print(f"Output: {FACES_CSV}")

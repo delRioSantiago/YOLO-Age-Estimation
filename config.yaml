@@ -1,8 +1,10 @@
 paths:
-  images: /work/scratch/sd37taza/big_test/test_input
-  out_bodies: /work/scratch/sd37taza/big_test/test_output/bodies
-  out_faces: /work/scratch/sd37taza/big_test/test_output/faces
-  tables: /work/scratch/sd37taza/big_test/test_output/tables
+  project: C:\Users\santi\OneDrive\Dokumente\Age-Estimation\Code\big_test
+  images: original_images
+  bodies: bodies
+  faces: faces
+  tables: tables
+  export: final_output
 
 detect:
   yolo_body: yolov8n.pt
@@ -27,11 +29,20 @@ runtime:
 
 schema:
   images: [image_id, image_path, width, height]
-  bodies: [image_id, body_id, body_conf, body_crop_path, detector_body, age_mivolo]
-  faces: [image_id, body_id, face_id, face_conf, face_crop_path, gender, race, age_deepface, age_mivolo, age_vlm]
+  bodies: [image_id, body_id, body_conf, file_name, detector_body, age_mivolo]
+  faces: [image_id, body_id, face_id, face_conf, file_name, gender, race, age_deepface, age_mivolo, age_vlm, sharpness, brightness, contrast, usable]
 
 annotate:
   deepface:
     actions: ["age", "gender", "race"]
     detector_backend: "skip"
     write_every: 200
+
+quality:
+  min_sharpness: 50.0
+  min_contrast: 15.0
+  min_brightness: 30.0
+  max_brightness: 220.0
+  min_face_size: 112
+
+

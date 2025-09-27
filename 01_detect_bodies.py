@@ -1,15 +1,16 @@
 import os
 import  csv
 import cv2
-import yaml
-from ultralytics import YOLO
+import yaml # pip install pyyaml
+from ultralytics import YOLO # pip install ultralytics
 
 with open("config.yaml") as f:
     cfg = yaml.safe_load(f)
 
-IN_PATH   = cfg["paths"]["images"]
-OUT_BODIES_PATH = cfg["paths"]["out_bodies"]
-CSV_PATH  = cfg["paths"]["tables"]
+PROJECT_DIR = cfg["paths"]["project"]
+IN_PATH = os.path.join(PROJECT_DIR, cfg["paths"]["images"])
+OUT_BODIES_PATH = os.path.join(PROJECT_DIR, cfg["paths"]["bodies"])
+CSV_PATH = os.path.join(PROJECT_DIR, cfg["paths"]["tables"])
 os.makedirs(OUT_BODIES_PATH, exist_ok=True); os.makedirs(CSV_PATH, exist_ok=True)
 
 model = YOLO(cfg["detect"]["yolo_body"])
@@ -46,5 +47,5 @@ with open(csv_path, "a", newline="") as csv_file:
             out_path = os.path.join(OUT_BODIES_PATH, out_name)
             cv2.imwrite(out_path, crop)
 
-            csv_writer.writerow([image_id, body_id, f"{conf:.6f}", out_path, cfg["detect"]["yolo_body"]])
+            csv_writer.writerow([image_id, body_id, f"{conf:.6f}", out_name, cfg["detect"]["yolo_body"]])
             body_id += 1

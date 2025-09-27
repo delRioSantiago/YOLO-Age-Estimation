@@ -1,33 +1,33 @@
 import os
 import  csv
-import cv2
+import cv2 
 import yaml
-from deepface import DeepFace  
+import time
+from deepface import DeepFace  # pip install deepface
 
 with open("config.yaml") as f:
     cfg = yaml.safe_load(f)
 
-BODIES_CSV = os.path.join(cfg["paths"]["tables"], "bodies.csv")
-FACES_CSV  = os.path.join(cfg["paths"]["tables"], "faces.csv")
-OUT_FACES_PATH  = cfg["paths"]["out_faces"]
+PROJECT_DIR = cfg["paths"]["project"]
+BODIES_PATH = os.path.join(PROJECT_DIR, cfg["paths"]["bodies"])
+BODIES_CSV = os.path.join(PROJECT_DIR, cfg["paths"]["tables"], "bodies.csv")
+FACES_CSV  = os.path.join(PROJECT_DIR, cfg["paths"]["tables"], "faces.csv")
+OUT_FACES_PATH  = os.path.join(PROJECT_DIR, cfg["paths"]["faces"])
 os.makedirs(OUT_FACES_PATH, exist_ok=True)
-
-
 
 with open(BODIES_CSV) as file_bodies, open(FACES_CSV, "a", newline="") as file_faces:
     bodies_reader = csv.DictReader(file_bodies)
     faces_writer = csv.writer(file_faces)
     schema_faces = cfg["schema"]["faces"]
     faces_writer.writerow(schema_faces)
-    bodies_updates = {}  
+    t0 = time.time()
 
     for row in bodies_reader:
         image_id = row["image_id"]
         body_id = row["body_id"]
-        body_path = row["body_crop_path"]
-        img_body = cv2.imread(body_path)
+        BODY_PATH = os.path.join(BODIES_PATH, row["file_name"])
+        img_body = cv2.imread(BODY_PATH)
         if img_body is None: 
-            bodies_updates[(image_id,body_id)] = (0)
             continue
         # Face-Detektion
         faces = DeepFace.extract_faces(
@@ -43,7 +43,6 @@ with open(BODIES_CSV) as file_bodies, open(FACES_CSV, "a", newline="") as file_f
 
         candidates.sort(key=lambda z: z[0], reverse=True)
         keep = 1 if candidates else 0
-        bodies_updates[(image_id,body_id)] = (keep) # TODO nutzen oder entfernen
 
         for face_id, (conf, fdict) in enumerate(candidates):
             face = fdict["face"]
@@ -52,8 +51,6 @@ with open(BODIES_CSV) as file_bodies, open(FACES_CSV, "a", newline="") as file_f
             face = cv2.cvtColor(face, cv2.COLOR_RGB2BGR)
             face_name = f"{image_id}_body{body_id}_face{face_id}.jpg"
             out_path = os.path.join(OUT_FACES_PATH, face_name)
-            # optional: letterbox auf cfg["preprocess"]["face_out_size"] TODO entscheiden
-            face = cv2.resize(face, (cfg["preprocess"]["face_out_size"])*2) if False else face
             cv2.imwrite(out_path, face)
 
             row_dict = {
@@ -61,12 +58,13 @@ with open(BODIES_CSV) as file_bodies, open(FACES_CSV, "a", newline="") as file_f
                 "body_id": body_id,
                 "face_id": face_id,
                 "face_conf": f"{conf:.6f}",
-                "face_crop_path": out_path,
+                "file_name": face_name,
                 "detector_face": cfg["detect"]["deepface_backend"],
             }
 
-            # Vollständige Zeile gemäß Schema
             row_out = [row_dict.get(col, None) for col in schema_faces]
             faces_writer.writerow(row_out)
             del face
         del img_body, faces, candidates
+dt = time.time() - t0
+print(f"Fertig mit der Gesichtserkennung. Dauer: {dt:.1f}s")
