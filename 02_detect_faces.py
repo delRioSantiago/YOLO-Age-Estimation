@@ -37,7 +37,7 @@ with open(BODIES_CSV) as file_bodies, open(FACES_CSV, "a", newline="") as file_f
         candidates = []
         for fdict in faces: 
             conf = float(fdict.get("confidence", 0.0))
-            if conf < min(cfg["detect"]["face_conf_thres"]):
+            if conf < cfg["detect"]["face_conf_thres"]:
                 continue
             candidates.append((conf, fdict))
 
@@ -59,7 +59,6 @@ with open(BODIES_CSV) as file_bodies, open(FACES_CSV, "a", newline="") as file_f
                 "face_id": face_id,
                 "face_conf": f"{conf:.6f}",
                 "file_name": face_name,
-                "detector_face": cfg["detect"]["deepface_backend"],
             }
 
             row_out = [row_dict.get(col, None) for col in schema_faces]

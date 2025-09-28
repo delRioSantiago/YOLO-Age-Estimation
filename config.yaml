@@ -1,5 +1,5 @@
 paths:
-  project: C:\Users\santi\OneDrive\Dokumente\Age-Estimation\Code\big_test
+  project: C:\Users\santi\OneDrive\Dokumente\Age-Estimation\Code\unsplash
   images: original_images
   bodies: bodies
   faces: faces
@@ -9,34 +9,19 @@ paths:
 detect:
   yolo_body: yolov8n.pt
   img_size_body: 640
-  body_conf_thres: [0.25, 0.5, 0.75]
-
+  body_conf_thres: 0.25
+  nms_iou_thres: 0.5
   deepface_backend: yolov8
-  face_out_size: 224
-  face_min_size: 64
-  face_conf_thres: [0.5, 0.7, 0.85]
-
-preprocess:
-  letterbox_size: 224
-  pad_color: 114
-  archive_long_side_cap: 512
+  face_conf_thres: 0.5
 
 runtime:
   batch_size: 16
-  fp16: true
-  num_workers: 4
   seed: 1337
 
 schema:
   images: [image_id, image_path, width, height]
-  bodies: [image_id, body_id, body_conf, file_name, detector_body, age_mivolo]
-  faces: [image_id, body_id, face_id, face_conf, file_name, gender, race, age_deepface, age_mivolo, age_vlm, sharpness, brightness, contrast, usable]
-
-annotate:
-  deepface:
-    actions: ["age", "gender", "race"]
-    detector_backend: "skip"
-    write_every: 200
+  bodies: [image_id, body_id, body_conf, file_name]
+  faces: [image_id, body_id, face_id, face_conf, file_name, gender, race, age_deepface, age_mivolo, sharpness, brightness, contrast, usable]
 
 quality:
   min_sharpness: 50.0
@@ -45,4 +30,8 @@ quality:
   max_brightness: 220.0
   min_face_size: 112
 
-
+train:
+  out_dataset: dataset_age_cls
+  split: {train: 0.8, val: 0.1, test: 0.1}
+  age_priority: [age_mivolo, age_deepface]
+  target_per_class: 1200  
