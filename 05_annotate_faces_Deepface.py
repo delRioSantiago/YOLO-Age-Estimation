@@ -10,8 +10,8 @@ with open("config.yaml", "r", encoding="utf-8") as f:
 
 PROJECT_DIR = cfg["paths"]["project"]
 FACES_CSV   = os.path.join(PROJECT_DIR, cfg["paths"]["tables"], "faces.csv")
+FACES_PATH  = os.path.join(PROJECT_DIR, cfg["paths"]["faces"])
 TMP = os.path.join(PROJECT_DIR, cfg["paths"]["tables"], "faces.tmp.csv")
-MIN_FACE_CONF   = min(cfg["detect"]["face_conf_thres"])
 
 if not os.path.exists(FACES_CSV):
     raise FileNotFoundError(f"faces.csv nicht gefunden: {FACES_CSV}")
@@ -22,6 +22,7 @@ processed = 0
 skipped   = 0
 errors    = 0
 unusable  = 0
+counter    = 0
 t0 = time.time()
 
 with open(FACES_CSV, "r", encoding="utf-8") as faces_file, open(TMP, "w", newline="", encoding="utf-8") as tmp_file:
@@ -29,12 +30,15 @@ with open(FACES_CSV, "r", encoding="utf-8") as faces_file, open(TMP, "w", newlin
     writer_faces = csv.DictWriter(tmp_file, fieldnames=schema_faces)
     writer_faces.writeheader()
     for row in reader_faces:
-        print (f"Wert von usable: {row.get('usable')}")
-        if row.get("usable") == "False":
+        counter += 1
+        if counter % 500 == 0:
+            print(f"Verarbeite {counter} Gesichter...")
+        if row["usable"] == "False":
             unusable += 1
+            writer_faces.writerow(row)
             continue
         try: 
-            img_face = cv2.imread(os.path.join(PROJECT_DIR, cfg["paths"]["faces"], row["file_name"]))
+            img_face = cv2.imread(os.path.join(FACES_PATH, row["file_name"]))
             if img_face is None:
                 errors += 1
                 continue
@@ -51,7 +55,7 @@ with open(FACES_CSV, "r", encoding="utf-8") as faces_file, open(TMP, "w", newlin
             pass
         writer_faces.writerow(row)
         processed += 1
-# shutil.move(TMP, FACES_CSV)
+os.replace(TMP, FACES_CSV)
 dt = time.time() - t0
 print(f"Fertig. Annotiert: {processed}, übersprungen: {skipped}, unbrauchbar: {unusable}, Fehler: {errors}, Dauer: {dt:.1f}s")
 print(f"Output: {FACES_CSV}")

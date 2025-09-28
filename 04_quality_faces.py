@@ -1,7 +1,6 @@
-import os, csv, shutil, cv2, yaml, time
-import numpy as np # pip install numpy
+import os, csv, cv2, yaml, time
+import numpy as np 
 
-# --- Config laden ---
 with open("config.yaml", "r", encoding="utf-8") as f:
     cfg = yaml.safe_load(f)
 
@@ -16,7 +15,6 @@ if not os.path.exists(IN_PATH):
     raise FileNotFoundError(f"faces.csv nicht gefunden: {IN_PATH}")
 os.makedirs(TABLES_DIR, exist_ok=True)
 
-# --- Qualitätsfunktionen ---
 def sharpness_score(img):
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     return cv2.Laplacian(gray, cv2.CV_64F).var()
@@ -29,8 +27,8 @@ def contrast_score(img):
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     return float(np.std(gray))
 
-# --- Verarbeitung ---
 start_time = time.time()
+counter = 0
 with open(IN_PATH, "r", encoding="utf-8", newline="") as fi, \
      open(TMP_PATH, "w", encoding="utf-8", newline="") as fo:
     reader = csv.DictReader(fi)
@@ -39,6 +37,9 @@ with open(IN_PATH, "r", encoding="utf-8", newline="") as fi, \
 
     processed = skipped = errors = usable_count = 0
     for row in reader:
+        counter += 1
+        if counter % 1000 == 0:
+            print(f"Processed {counter} faces...")
         face_path = os.path.join(PROJECT_DIR, cfg["paths"]["faces"], row["file_name"])
         try:
             img = cv2.imread(face_path)
@@ -78,7 +79,7 @@ with open(IN_PATH, "r", encoding="utf-8", newline="") as fi, \
 
         writer.writerow(row)
 
-shutil.move(TMP_PATH, IN_PATH)
+os.replace(TMP_PATH, IN_PATH)
 end_time = time.time()
 print(f"Quality-Check fertig: {processed} ok, {errors} Fehler, {usable_count} nutzbar, Output: {IN_PATH}")
 print(f"Verarbeitungszeit: {end_time - start_time:.2f} Sekunden")
