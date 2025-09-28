@@ -8,7 +8,7 @@ paths:
 
 detect:
   yolo_body: yolov8n.pt
-  img_size_body: 640
+  img_size_body: 640 
   body_conf_thres: 0.25
   nms_iou_thres: 0.5
   deepface_backend: yolov8

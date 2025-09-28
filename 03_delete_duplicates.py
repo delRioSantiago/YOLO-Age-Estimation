@@ -1,4 +1,4 @@
-import os
+import os 
 from PIL import Image
 import imagehash  # pip install ImageHash
 import yaml

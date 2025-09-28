@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import os, csv, yaml, time
 import cv2
 import torch

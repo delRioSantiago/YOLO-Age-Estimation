@@ -1,5 +1,5 @@
 import os, csv, cv2, yaml, time
-import numpy as np 
+import numpy as np  
 
 with open("config.yaml", "r", encoding="utf-8") as f:
     cfg = yaml.safe_load(f)
